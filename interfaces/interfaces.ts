@@ -16,11 +16,14 @@ interface CustomError extends Error {
   code?: number;
 }
 
-
-interface UserDetails{
-  id:string
-  name:string,
-  email:string,
-  password:string
+interface UserDetails {
+  id: string;
+  name: string;
+  email: string;
+  password: string;
 }
-export { Places, Coordinates,CustomError ,UserDetails};
+
+interface DocumentStructure {
+  [key: string]: any;
+}
+export { Places, Coordinates, CustomError, UserDetails,DocumentStructure };

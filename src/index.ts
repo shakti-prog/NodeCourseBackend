@@ -5,6 +5,7 @@ import { CustomError } from "../interfaces/interfaces";
 
 const placeRoutes: Router = require("../routes/placesRoutes");
 const userRoutes: Router = require("../routes/userRoutes");
+const productRouters: Router = require("../routes/productRoutes");
 
 const createCustomError = require("../functions/Errorfunctions/index");
 
@@ -15,6 +16,8 @@ const app: Express = express();
 app.use(bodyParser.json());
 app.use("/api/place", placeRoutes);
 app.use("/api/user", userRoutes);
+app.use("/api/products", productRouters);
+
 app.use((req: Request, res: Response, next) => {
   return next(createCustomError("Could not find route", 404));
 });
