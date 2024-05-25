@@ -26,4 +26,18 @@ interface UserDetails {
 interface DocumentStructure {
   [key: string]: any;
 }
-export { Places, Coordinates, CustomError, UserDetails,DocumentStructure };
+
+interface Product {
+  productName: string;
+  productId: string;
+  productDescription: string;
+  price: Number;
+}
+export {
+  Places,
+  Coordinates,
+  CustomError,
+  UserDetails,
+  DocumentStructure,
+  Product,
+};

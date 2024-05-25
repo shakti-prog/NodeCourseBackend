@@ -1,8 +1,10 @@
 import { Request, Response } from "express";
-import { DocumentStructure } from "../interfaces/interfaces";
+import { DocumentStructure, Product } from "../interfaces/interfaces";
+import * as uuid from "uuid";
 
 const queryFunctions = require("../db/HandlerFunctions");
 const createCustomError = require("../functions/Errorfunctions/index");
+import { validationResult } from "express-validator";
 
 async function getProduct(req: Request, res: Response, next: Function) {
   try {
@@ -24,9 +26,15 @@ async function getProduct(req: Request, res: Response, next: Function) {
 
 async function createProduct(req: Request, res: Response, next: Function) {
   try {
+    if (!validationResult(req).isEmpty())
+      return next(createCustomError("Validation error", 422));
+    const body: Product = req.body;
+    const { productName, productDescription, price } = body;
     const resp = await queryFunctions.insertOneQuery("products", {
-      productName: "prodOne",
-      productId: "1234",
+      productName,
+      productId: uuid.v4(),
+      productDescription,
+      price: Number(price),
     });
     return res.json({ message: "Inserted Successfully", response: resp });
   } catch (e) {
