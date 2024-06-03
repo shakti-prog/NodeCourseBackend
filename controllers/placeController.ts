@@ -3,60 +3,65 @@ import { Places } from "../interfaces/interfaces";
 import * as uuid from "uuid";
 const createCustomError = require("../functions/Errorfunctions/index");
 import { validationResult } from "express-validator";
+const handlerFunctions = require("../db/HandlerFunctions");
+import * as mongoDB from "mongodb";
 
-const dummyPlacesData: Array<Places> = [
-  {
-    id: "pd1",
-    title: "test_one",
-    description: "test description",
-    coordinates: {
-      latitude: 40.78,
-      longitude: -74.5,
-    },
-    address: "Test address",
-    creator: "Test_creator",
-  },
-  {
-    id: "pd2",
-    title: "test_two",
-    description: "test description",
-    coordinates: {
-      latitude: 40.78,
-      longitude: -74.5,
-    },
-    address: "Test two address",
-    creator: "Test two creator",
-  },
-];
+// const dummyPlacesData: Array<Places> = [
+//   {
+//     id: "pd1",
+//     title: "test_one",
+//     description: "test description",
+//     coordinates: {
+//       latitude: 40.78,
+//       longitude: -74.5,
+//     },
+//     address: "Test address",
+//     creator: "Test_creator",
+//     image: "http://action.example.com/",
+//   },
+//   {
+//     id: "pd2",
+//     title: "test_two",
+//     description: "test description",
+//     coordinates: {
+//       latitude: 40.78,
+//       longitude: -74.5,
+//     },
+//     address: "Test two address",
+//     creator: "Test two creator",
+//     image: "http://action.example.com/",
+//   },
+// ];
 
-function getPlaceById(req: Request, res: Response, next: Function) {
+async function getPlaceById(req: Request, res: Response, next: Function) {
   console.log("Get request");
   const placeId: string = req.params.placeId;
-  const place = dummyPlacesData.find((p) => p.id === placeId);
-  if (!place) {
-    return next(createCustomError("No place found with place id", 404));
-  }
-  return res.json({ place });
+  const places: Array<Places> = await handlerFunctions.getQuery("Places", {
+    id: placeId,
+  });
+  if (!places || places.length === 0)
+    return next(createCustomError("No place found for place id", 404));
+  res.json({ places });
 }
 
-function getPlaceByUserId(req: Request, res: Response, next: Function) {
+async function getPlaceByUserId(req: Request, res: Response, next: Function) {
   console.log("Place for user");
   const userId: string = req.params.userId;
-  const place: Array<Places> = dummyPlacesData.filter(
-    (p) => p.creator === userId
-  );
-  if (!place || place.length === 0) {
-    return next(createCustomError("No place found for user id", 404));
-  }
-  res.json({ place });
+  const places: Array<Places> = await handlerFunctions.getQuery("Places", {
+    creator: userId,
+  });
+  if (!places || places.length === 0)
+    return next(createCustomError("No place found for place id", 404));
+  res.json({ places });
 }
 
-function createPlace(req: Request, res: Response, next: Function) {
+async function createPlace(req: Request, res: Response, next: Function) {
   console.log("Here in creation of place");
   if (!validationResult(req).isEmpty())
     return next(createCustomError("Validation error", 422));
   const requestBody: Places = req.body;
-  const { description, title, coordinates, address, creator } = requestBody;
+  const { description, title, coordinates, address, creator, image } =
+    requestBody;
   const newObject: Places = {
     description,
     title,
@@ -64,33 +69,35 @@ function createPlace(req: Request, res: Response, next: Function) {
     address,
     creator,
     id: uuid.v4(),
+    image,
   };
-  dummyPlacesData.push(newObject);
-  res.status(201).json(newObject);
+  const response: mongoDB.InsertOneResult =
+    await handlerFunctions.insertOneQuery("Places", newObject);
+  res.status(201).json(response);
 }
 
-function updatePlace(req: Request, res: Response, next: Function) {
+async function updatePlace(req: Request, res: Response, next: Function) {
   console.log("in update place");
-  if (!validationResult(req).isEmpty())
-    return next(createCustomError("Validation error", 422));
-  const placeId: string = req.params.placeId;
-  const indexNum: number = dummyPlacesData.findIndex((d) => d.id === placeId);
-  if (indexNum < 0) {
-    return next(createCustomError("No place found with given id", 404));
-  }
-  const updatedObject: Places = req.body;
-  const currObject: Places = dummyPlacesData[indexNum];
-  dummyPlacesData[indexNum] = { ...currObject, ...updatedObject };
-  res.status(201).json(dummyPlacesData[indexNum]);
+  // if (!validationResult(req).isEmpty())
+  //   return next(createCustomError("Validation error", 422));
+  // const placeId: string = req.params.placeId;
+  // const indexNum: number = dummyPlacesData.findIndex((d) => d.id === placeId);
+  // if (indexNum < 0) {
+  //   return next(createCustomError("No place found with given id", 404));
+  // }
+  // const updatedObject: Places = req.body;
+  // const currObject: Places = dummyPlacesData[indexNum];
+  // dummyPlacesData[indexNum] = { ...currObject, ...updatedObject };
+  // res.status(201).json(dummyPlacesData[indexNum]);
 }
 
-function deletePlace(req: Request, res: Response, next: Function) {
+async function deletePlace(req: Request, res: Response, next: Function) {
   console.log("In in delete place");
-  const placeId: string = req.params.placeId;
-  const newDummyData: Array<Places> = dummyPlacesData.filter(
-    (d) => d.id !== placeId
-  );
-  res.status(201).json(newDummyData);
+  // const placeId: string = req.params.placeId;
+  // const newDummyData: Array<Places> = dummyPlacesData.filter(
+  //   (d) => d.id !== placeId
+  // );
+  // res.status(201).json(newDummyData);
 }
 exports.getPlaceById = getPlaceById;
 exports.getPlaceByUserId = getPlaceByUserId;

@@ -23,6 +23,10 @@ router.post(
     check("title").not().notEmpty(),
     check("description").isLength({ min: 5 }),
     check("address").not().notEmpty(),
+    check("image").isURL(),
+    check("coordinates.latitude").isNumeric(),
+    check("coordinates.longitude").isNumeric(),
+    check("creator").notEmpty(),
   ],
   placeControllers.createPlace
 );

@@ -5,6 +5,7 @@ interface Places {
   coordinates: Coordinates;
   address: string;
   creator: string;
+  image:string,
 }
 
 interface Coordinates {
