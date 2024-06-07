@@ -54,6 +54,26 @@ async function deleteOneQuery(
   }
 }
 
+async function updateOneQuery(
+  collectionName: string,
+  filter: DocumentStructure,
+  updates: DocumentStructure
+) {
+  try {
+    await client.connect();
+    const db: mongoDB.Db = client.db();
+    const res: mongoDB.UpdateResult = await db
+      .collection(collectionName)
+      .updateOne(filter, { $set: updates });
+    await client.close();
+    return res;
+  } catch (e) {
+    console.error(e);
+    await client.close();
+  }
+}
+
 exports.insertOneQuery = insertOneQuery;
 exports.deleteOneQuery = deleteOneQuery;
 exports.getQuery = getQuery;
+exports.updateOneQuery = updateOneQuery;

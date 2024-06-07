@@ -9,7 +9,12 @@ router.get("/:placeId", placeControllers.getPlaceById);
 
 router.patch(
   "/:placeId",
-  [check("title").not().notEmpty(), check("description").isLength({ min: 5 })],
+  [
+    check("title").optional().not().notEmpty(),
+    check("description").optional().isLength({ min: 5 }),
+    check("address").optional().notEmpty(),
+    check("image").optional().isURL(),
+  ],
   placeControllers.updatePlace
 );
 
