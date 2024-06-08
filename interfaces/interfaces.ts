@@ -5,7 +5,7 @@ interface Places {
   coordinates: Coordinates;
   address: string;
   creator: string;
-  image:string,
+  image: string;
 }
 
 interface Coordinates {
@@ -22,6 +22,8 @@ interface UserDetails {
   name: string;
   email: string;
   password: string;
+  image: string;
+  places: [];
 }
 
 interface DocumentStructure {

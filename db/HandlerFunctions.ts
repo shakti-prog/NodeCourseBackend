@@ -3,13 +3,18 @@ import * as mongoDB from "mongodb";
 
 const client = require("./Client");
 
-async function getQuery(collectionName: string, filters: DocumentStructure) {
+async function getQuery(
+  collectionName: string,
+  filters: DocumentStructure,
+  projection = {}
+) {
   try {
     await client.connect();
     const db: mongoDB.Db = client.db();
     const res: Array<DocumentStructure> = await db
       .collection(collectionName)
       .find(filters)
+      .project(projection)
       .toArray();
     await client.close();
     return res;
