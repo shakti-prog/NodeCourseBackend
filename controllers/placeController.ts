@@ -1,5 +1,9 @@
 import { Request, Response, Router } from "express";
-import { Places } from "../interfaces/interfaces";
+import {
+  DocumentStructure,
+  Places,
+  UserDetails,
+} from "../interfaces/interfaces";
 import * as uuid from "uuid";
 const createCustomError = require("../functions/Errorfunctions/index");
 import { validationResult } from "express-validator";
@@ -46,18 +50,32 @@ async function createPlace(req: Request, res: Response, next: Function) {
     const requestBody: Places = req.body;
     const { description, title, coordinates, address, creator, image } =
       requestBody;
-    const newObject: Places = {
-      description,
-      title,
-      coordinates,
-      address,
-      creator,
-      id: uuid.v4(),
-      image,
-    };
-    const response: mongoDB.InsertOneResult =
-      await handlerFunctions.insertOneQuery("Places", newObject);
-    res.status(201).json(response);
+    const user: Array<UserDetails> = await handlerFunctions.getQuery(
+      "Users",
+      { name: creator },
+      { _id: 1 }
+    );
+    if (!user || user.length === 0)
+      return next(
+        createCustomError(
+          "Place cannot be created as user with given credentials is not present ",
+          401
+        )
+      );
+    await handlerFunctions.placeAdditionTransaction(
+      {
+        description,
+        title,
+        coordinates,
+        address,
+        creator,
+        id: uuid.v4(),
+        image,
+      },
+      creator
+    );
+
+    res.status(201).json({ message: "Place successfully added" });
   } catch (error) {
     console.error(error);
     return next(createCustomError("Something went wrong", 500));
@@ -82,7 +100,7 @@ async function updatePlace(req: Request, res: Response, next: Function) {
     const resp: mongoDB.UpdateResult = await handlerFunctions.updateOneQuery(
       "Places",
       { id: placeId },
-      { ...updates }
+      { $set: updates }
     );
     return res.status(200).json(resp);
   } catch (error) {
@@ -95,9 +113,19 @@ async function deletePlace(req: Request, res: Response, next: Function) {
   console.log("In in delete place");
   try {
     const placeId: string = req.params.placeId;
-    const deletePlace: mongoDB.DeleteResult =
-      await handlerFunctions.deleteOneQuery("Places", { id: placeId });
-    res.status(200).json(deletePlace);
+    const place: Array<DocumentStructure> = await handlerFunctions.getQuery(
+      "Places",
+      {
+        id: placeId,
+      }
+    );
+    if (!place || place.length === 0)
+      return next(createCustomError("No place is present with given id", 404));
+    await handlerFunctions.placeDeletionTransaction(
+      place[0]._id,
+      place[0].creator
+    );
+    res.status(200).json({ message: "Place Deleted Successfully" });
   } catch (error) {
     console.error(error);
     return next(createCustomError("Something went wrong", 500));

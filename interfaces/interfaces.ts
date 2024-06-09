@@ -1,3 +1,5 @@
+import * as mongoDB from "mongodb";
+
 interface Places {
   id: string;
   title: string;
@@ -23,7 +25,7 @@ interface UserDetails {
   email: string;
   password: string;
   image: string;
-  places: [];
+  places: mongoDB.ObjectId[];
 }
 
 interface DocumentStructure {
